@@ -104,8 +104,10 @@ el.faraway = (...targets: HTMLElement[]) => {
         if (target.dataset.originLeft === undefined) {
             target.dataset.originPosition = target.style.position;
             target.dataset.originLeft = target.style.left;
+            target.dataset.originTop = target.style.top;
             target.style.position = "fixed";
             target.style.left = "-999999px";
+            target.style.top = "-999999px";
         }
     }
 };
@@ -115,8 +117,10 @@ el.bringback = (...targets: HTMLElement[]) => {
         if (target.dataset.originLeft !== undefined) {
             target.style.position = target.dataset.originPosition!;
             target.style.left = target.dataset.originLeft!;
+            target.style.top = target.dataset.originTop!;
             delete target.dataset.originPosition;
             delete target.dataset.originLeft;
+            delete target.dataset.originTop;
         }
     }
 };
@@ -128,7 +132,9 @@ el.empty = (target: HTMLElement) => {
 el.style = (target: HTMLElement, style: { [key: string]: string | number }) => {
     for (const [key, value] of Object.entries(style)) {
         if ((
-            key === "left" || key === "top" || key === "width" || key === "height"
+            key === "left" || key === "top" ||
+            key === "right" || key === "bottom" ||
+            key === "width" || key === "height"
         ) && typeof value === "number") {
             (target.style as any)[key] = `${value}px`;
         } else {
@@ -161,6 +167,28 @@ el.distance = (target: HTMLElement, position: BrowserPosition): { rect: DOMRect,
             ),
         };
     }
+};
+
+el.fill = (templates: Array<HTMLElement | string>, targetText: string, add: HTMLElement | string) => {
+    let result: Array<HTMLElement | string> = [];
+    for (const template of templates) {
+        if (typeof template === "string") {
+            const index = template.indexOf(targetText);
+            if (index !== -1) {
+                const first = template.substring(0, index);
+                if (first !== "") {
+                    result.push(first);
+                }
+                result.push(add);
+                result = result.concat(el.fill([template.substring(index + targetText.length)], targetText, add));
+            } else {
+                result.push(template);
+            }
+        } else {
+            result.push(template);
+        }
+    }
+    return result;
 };
 
 export default el;
