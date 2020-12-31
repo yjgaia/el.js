@@ -1,43 +1,33 @@
-type EventHandler<EL, EV> = (event: EV, element: EL) => void;
-interface Attributes<EL> {
-    [name: string]: string | undefined | EventHandler<EL, any>;
-}
-export type Child<EL> = Attributes<EL> | HTMLElement | DocumentFragment | string | undefined;
-
-const el = <EL extends HTMLElement>(tag: string, ...children: Array<Child<EL>>) => {
-
-    let id: string | undefined;
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const el = (tag, ...children) => {
+    let id;
     const idIndex = tag.indexOf("#");
     if (idIndex !== -1) {
         id = tag.substring(idIndex + 1);
         tag = tag.substring(0, idIndex);
-
         const cindex = id.indexOf(".");
         if (cindex !== -1) {
             id = id.substring(0, cindex);
             tag += id.substring(cindex);
         }
     }
-
-    let className: string | undefined;
+    let className;
     const classNameIndex = tag.indexOf(".");
     if (classNameIndex !== -1) {
         className = tag.substring(classNameIndex + 1).replace(/\./g, " ");
         tag = tag.substring(0, classNameIndex);
     }
-
     if (tag === "") {
         tag = "div";
     }
-
-    const element: EL = document.createElement(tag) as EL;
+    const element = document.createElement(tag);
     if (id !== undefined) {
         element.id = id;
     }
     if (className !== undefined) {
         element.className = className;
     }
-
     const fragment = new DocumentFragment();
     for (const child of children) {
         if (child !== undefined) {
@@ -49,15 +39,19 @@ const el = <EL extends HTMLElement>(tag: string, ...children: Array<Child<EL>>) 
                     }
                     fragment.append(str);
                 }
-            } else if (child instanceof HTMLElement || child instanceof DocumentFragment) {
+            }
+            else if (child instanceof HTMLElement || child instanceof DocumentFragment) {
                 fragment.append(child);
-            } else {
+            }
+            else {
                 for (const [name, value] of Object.entries(child)) {
                     if (value === undefined) {
                         element.removeAttribute(name);
-                    } else if (typeof value === "string") {
+                    }
+                    else if (typeof value === "string") {
                         element.setAttribute(name, value);
-                    } else {
+                    }
+                    else {
                         element.addEventListener(name, (event) => {
                             value(event, element);
                         });
@@ -69,35 +63,29 @@ const el = <EL extends HTMLElement>(tag: string, ...children: Array<Child<EL>>) 
     element.append(fragment);
     return element;
 };
-
-el.fragment = (...children: Array<HTMLElement | string>): DocumentFragment => {
+el.fragment = (...children) => {
     const fragment = new DocumentFragment();
     fragment.append(...children);
     return fragment;
 };
-
-el.append = (parent: HTMLElement, ...children: Array<HTMLElement | string | undefined>) => {
-    parent.append(...children.filter((c) => c !== undefined) as Array<HTMLElement | string>);
+el.append = (parent, ...children) => {
+    parent.append(...children.filter((c) => c !== undefined));
 };
-
-el.clone = <EL extends HTMLElement>(target: EL): EL => {
-    return target.cloneNode(true) as EL;
+el.clone = (target) => {
+    return target.cloneNode(true);
 };
-
-el.resImage = <EL extends HTMLElement, EV extends Event>(tag: string, src: string, ...children: Array<Child<EL>>) => {
+el.resImage = (tag, src, ...children) => {
     const src2x = src.substring(0, src.lastIndexOf(".png")) + "@2x.png";
     const src3x = src.substring(0, src.lastIndexOf(".png")) + "@3x.png";
     return el(tag, ...children, { src, srcSet: `${src2x} 2x, ${src3x} 3x` });
 };
-
-el.changeResImage = (target: HTMLImageElement, src: string) => {
+el.changeResImage = (target, src) => {
     const src2x = src.substring(0, src.lastIndexOf(".png")) + "@2x.png";
     const src3x = src.substring(0, src.lastIndexOf(".png")) + "@3x.png";
     target.src = src;
     target.srcset = `${src2x} 2x, ${src3x} 3x`;
 };
-
-el.faraway = (...targets: HTMLElement[]) => {
+el.faraway = (...targets) => {
     for (const target of targets) {
         if (target.dataset.originLeft === undefined) {
             target.dataset.originPosition = target.style.position;
@@ -109,66 +97,62 @@ el.faraway = (...targets: HTMLElement[]) => {
         }
     }
 };
-
-el.bringback = (...targets: HTMLElement[]) => {
+el.bringback = (...targets) => {
     for (const target of targets) {
         if (target.dataset.originLeft !== undefined) {
-            target.style.position = target.dataset.originPosition!;
-            target.style.left = target.dataset.originLeft!;
-            target.style.top = target.dataset.originTop!;
+            target.style.position = target.dataset.originPosition;
+            target.style.left = target.dataset.originLeft;
+            target.style.top = target.dataset.originTop;
             delete target.dataset.originPosition;
             delete target.dataset.originLeft;
             delete target.dataset.originTop;
         }
     }
 };
-
-el.empty = (target: HTMLElement) => {
-    while (target.firstChild) { target.removeChild(target.firstChild); }
+el.empty = (target) => {
+    while (target.firstChild) {
+        target.removeChild(target.firstChild);
+    }
 };
-
-el.style = (target: HTMLElement, style: { [key: string]: string | number }) => {
+el.style = (target, style) => {
     for (const [key, value] of Object.entries(style)) {
-        if ((
-            key === "left" || key === "top" ||
+        if ((key === "left" || key === "top" ||
             key === "right" || key === "bottom" ||
-            key === "width" || key === "height"
-        ) && typeof value === "number") {
-            (target.style as any)[key] = `${value}px`;
-        } else {
-            (target.style as any)[key] = value;
+            key === "width" || key === "height") && typeof value === "number") {
+            target.style[key] = `${value}px`;
+        }
+        else {
+            target.style[key] = value;
         }
     }
 };
-
-el.distance = (target: HTMLElement, position: { left: number, top: number }): { rect: DOMRect, distance: number } => {
-
-    const left = position.left; const top = position.top;
+el.distance = (target, position) => {
+    const left = position.left;
+    const top = position.top;
     const rect = target.getBoundingClientRect();
-    const blLeft = rect.left; const blTop = rect.top;
-    const trLeft = rect.right; const trTop = rect.bottom;
-
+    const blLeft = rect.left;
+    const blTop = rect.top;
+    const trLeft = rect.right;
+    const trTop = rect.bottom;
     if ((left >= blLeft && left <= trLeft) &&
         (top >= blTop && top <= trTop)) {
         return { rect, distance: 0 };
     }
-
     if ((left >= blLeft && left <= trLeft)) {
         return { rect, distance: Math.min(Math.abs(top - blTop), Math.abs(top - trTop)) };
-    } else if ((top >= blTop && top <= trTop)) {
+    }
+    else if ((top >= blTop && top <= trTop)) {
         return { rect, distance: Math.min(Math.abs(left - blLeft), Math.abs(left - trLeft)) };
-    } else {
+    }
+    else {
         return {
-            rect, distance: Math.sqrt(
-                (Math.pow(Math.min(Math.abs(left - blLeft), Math.abs(left - trLeft)), 2)) +
-                (Math.pow(Math.min(Math.abs(top - blTop), Math.abs(top - trTop)), 2)),
-            ),
+            rect, distance: Math.sqrt((Math.pow(Math.min(Math.abs(left - blLeft), Math.abs(left - trLeft)), 2)) +
+                (Math.pow(Math.min(Math.abs(top - blTop), Math.abs(top - trTop)), 2))),
         };
     }
 };
-
-el.fill = (templates: Array<HTMLElement | string>, targetText: string, add: HTMLElement | string) => {
-    let result: Array<HTMLElement | string> = [];
+el.fill = (templates, targetText, add) => {
+    let result = [];
     for (const template of templates) {
         if (typeof template === "string") {
             const index = template.indexOf(targetText);
@@ -179,14 +163,16 @@ el.fill = (templates: Array<HTMLElement | string>, targetText: string, add: HTML
                 }
                 result.push(add);
                 result = result.concat(el.fill([template.substring(index + targetText.length)], targetText, add));
-            } else {
+            }
+            else {
                 result.push(template);
             }
-        } else {
+        }
+        else {
             result.push(template);
         }
     }
     return result;
 };
-
-export default el;
+exports.default = el;
+//# sourceMappingURL=el.js.map
