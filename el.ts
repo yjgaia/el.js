@@ -4,7 +4,7 @@ interface Attributes<EL> {
 }
 export type Child<EL> = Attributes<EL> | HTMLElement | DocumentFragment | string | undefined;
 
-const el = <EL extends HTMLElement>(tag: string, ...children: Array<Child<EL>>) => {
+const el = <EL extends HTMLElement>(tag: string, ...children: Child<EL>[]) => {
 
     let id: string | undefined;
     const idIndex = tag.indexOf("#");
@@ -70,21 +70,21 @@ const el = <EL extends HTMLElement>(tag: string, ...children: Array<Child<EL>>) 
     return element;
 };
 
-el.fragment = (...children: Array<HTMLElement | string>): DocumentFragment => {
+el.fragment = (...children: (HTMLElement | string)[]): DocumentFragment => {
     const fragment = new DocumentFragment();
     fragment.append(...children);
     return fragment;
 };
 
-el.append = (parent: HTMLElement, ...children: Array<HTMLElement | string | undefined>) => {
-    parent.append(...children.filter((c) => c !== undefined) as Array<HTMLElement | string>);
+el.append = (parent: HTMLElement, ...children: (HTMLElement | string | undefined)[]) => {
+    parent.append(...children.filter((c) => c !== undefined) as (HTMLElement | string)[]);
 };
 
 el.clone = <EL extends HTMLElement>(target: EL): EL => {
     return target.cloneNode(true) as EL;
 };
 
-el.resImage = <EL extends HTMLElement, EV extends Event>(tag: string, src: string, ...children: Array<Child<EL>>) => {
+el.resImage = <EL extends HTMLElement, EV extends Event>(tag: string, src: string, ...children: Child<EL>[]) => {
     const src2x = src.substring(0, src.lastIndexOf(".png")) + "@2x.png";
     const src3x = src.substring(0, src.lastIndexOf(".png")) + "@3x.png";
     return el(tag, ...children, { src, srcSet: `${src2x} 2x, ${src3x} 3x` });
@@ -167,8 +167,8 @@ el.distance = (target: HTMLElement, position: { left: number, top: number }): { 
     }
 };
 
-el.fill = (templates: Array<HTMLElement | string>, targetText: string, add: HTMLElement | string) => {
-    let result: Array<HTMLElement | string> = [];
+el.fill = (templates: (HTMLElement | string)[], targetText: string, add: HTMLElement | string) => {
+    let result: (HTMLElement | string)[] = [];
     for (const template of templates) {
         if (typeof template === "string") {
             const index = template.indexOf(targetText);
