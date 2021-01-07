@@ -2,6 +2,7 @@
     "name": "@hanul/el.js",
     "author": "Young Jae Sim",
     "homepage": "https://github.com/Hanul/el.js",
-    "version": "0.0.1-beta.1",
-    "types": "./el.d.ts"
+    "version": "0.0.1-beta.2",
+    "types": "./el.d.ts",
+    "main": "./el.js"
 }
