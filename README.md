@@ -1,7 +1,7 @@
 # el.js
 ## Install
 ```
-npm i @hanul/el.js
+yarn add @hanul/el.js
 ```
 
 ## License
