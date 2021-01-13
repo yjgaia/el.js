@@ -51,10 +51,13 @@ const el = (tag, ...children) => {
                     else if (typeof value === "string") {
                         element.setAttribute(name, value);
                     }
-                    else {
+                    else if (typeof value === "function") {
                         element.addEventListener(name, (event) => {
                             value(event, element);
                         });
+                    }
+                    else if (name === "style") {
+                        el.style(element, value);
                     }
                 }
             }
@@ -116,9 +119,7 @@ el.empty = (target) => {
 };
 el.style = (target, style) => {
     for (const [key, value] of Object.entries(style)) {
-        if ((key === "left" || key === "top" ||
-            key === "right" || key === "bottom" ||
-            key === "width" || key === "height") && typeof value === "number") {
+        if (typeof value === "number" && key !== "zIndex" && key !== "opacity") {
             target.style[key] = `${value}px`;
         }
         else {

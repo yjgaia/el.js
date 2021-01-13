@@ -1,7 +1,11 @@
+export type Style = { [key: string]: string | number };
+
 type EventHandler<EL, EV> = (event: EV, element: EL) => void;
+
 interface Attributes<EL> {
-    [name: string]: string | undefined | EventHandler<EL, any>;
+    [name: string]: Style | string | undefined | EventHandler<EL, any>;
 }
+
 export type Child<EL> = Attributes<EL> | HTMLElement | DocumentFragment | string | undefined;
 
 const el = <EL extends HTMLElement>(tag: string, ...children: Child<EL>[]) => {
@@ -57,10 +61,12 @@ const el = <EL extends HTMLElement>(tag: string, ...children: Child<EL>[]) => {
                         element.removeAttribute(name);
                     } else if (typeof value === "string") {
                         element.setAttribute(name, value);
-                    } else {
+                    } else if (typeof value === "function") {
                         element.addEventListener(name, (event) => {
                             value(event, element);
                         });
+                    } else if (name === "style") {
+                        el.style(element, value);
                     }
                 }
             }
@@ -127,13 +133,9 @@ el.empty = (target: HTMLElement) => {
     while (target.firstChild) { target.removeChild(target.firstChild); }
 };
 
-el.style = (target: HTMLElement, style: { [key: string]: string | number }) => {
+el.style = (target: HTMLElement, style: Style) => {
     for (const [key, value] of Object.entries(style)) {
-        if ((
-            key === "left" || key === "top" ||
-            key === "right" || key === "bottom" ||
-            key === "width" || key === "height"
-        ) && typeof value === "number") {
+        if (typeof value === "number" && key !== "zIndex" && key !== "opacity") {
             (target.style as any)[key] = `${value}px`;
         } else {
             (target.style as any)[key] = value;
