@@ -129,8 +129,10 @@ el.bringback = (...targets: HTMLElement[]) => {
     }
 };
 
-el.empty = (target: HTMLElement) => {
-    while (target.firstChild) { target.removeChild(target.firstChild); }
+el.empty = (...targets: HTMLElement[]) => {
+    for (const target of targets) {
+        while (target.firstChild) { target.removeChild(target.firstChild); }
+    }
 };
 
 el.style = (target: HTMLElement, style: Style) => {
