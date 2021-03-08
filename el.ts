@@ -42,6 +42,17 @@ const el = <EL extends HTMLElement>(tag: string, ...children: Child<EL>[]) => {
         element.className = className;
     }
 
+    el.append(element, ...children);
+    return element;
+};
+
+el.fragment = (...children: (HTMLElement | string)[]): DocumentFragment => {
+    const fragment = new DocumentFragment();
+    fragment.append(...children);
+    return fragment;
+};
+
+el.append = <EL extends HTMLElement>(target: EL, ...children: Child<EL>[]) => {
     const fragment = new DocumentFragment();
     for (const child of children) {
         if (child !== undefined) {
@@ -58,32 +69,21 @@ const el = <EL extends HTMLElement>(tag: string, ...children: Child<EL>[]) => {
             } else {
                 for (const [name, value] of Object.entries(child)) {
                     if (value === undefined) {
-                        element.removeAttribute(name);
+                        target.removeAttribute(name);
                     } else if (typeof value === "string") {
-                        element.setAttribute(name, value);
+                        target.setAttribute(name, value);
                     } else if (typeof value === "function") {
-                        element.addEventListener(name, (event) => {
-                            value(event, element);
+                        target.addEventListener(name, (event) => {
+                            value(event, target);
                         });
                     } else if (name === "style") {
-                        el.style(element, value);
+                        el.style(target, value);
                     }
                 }
             }
         }
     }
-    element.append(fragment);
-    return element;
-};
-
-el.fragment = (...children: (HTMLElement | string)[]): DocumentFragment => {
-    const fragment = new DocumentFragment();
-    fragment.append(...children);
-    return fragment;
-};
-
-el.append = (parent: HTMLElement, ...children: (HTMLElement | string | undefined)[]) => {
-    parent.append(...children.filter((c) => c !== undefined) as (HTMLElement | string)[]);
+    target.append(fragment);
 };
 
 el.clone = <EL extends HTMLElement>(target: EL): EL => {
